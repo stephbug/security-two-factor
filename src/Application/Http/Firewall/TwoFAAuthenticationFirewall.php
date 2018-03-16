@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace StephBug\SecurityTwoFactor\Application\Http\Firewall;
 
-use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Http\Request;
-use StephBug\SecurityModel\Application\Http\Event\UserLogin;
+use StephBug\SecurityModel\Application\Exception\AuthenticationException;
+use StephBug\SecurityModel\Application\Http\Entrypoint\Entrypoint;
+use StephBug\SecurityModel\Application\Http\Response\AuthenticationSuccess;
 use StephBug\SecurityModel\Application\Values\SecurityKey;
+use StephBug\SecurityModel\Guard\Authentication\Token\Tokenable;
 use StephBug\SecurityModel\Guard\Guard;
+use StephBug\SecurityTwoFactor\Application\Http\Request\TwoFAAuthenticationRequest;
+use StephBug\SecurityTwoFactor\Authentication\Token\TwoFactorToken;
+use StephBug\SecurityTwoFactor\TwoFactor\TwoFAHandler;
+use Symfony\Component\HttpFoundation\Response;
 
 class TwoFAAuthenticationFirewall
 {
@@ -18,26 +24,94 @@ class TwoFAAuthenticationFirewall
     private $guard;
 
     /**
+     * @var TwoFAHandler
+     */
+    private $twoFAHandler;
+
+    /**
      * @var SecurityKey
      */
     private $securityKey;
 
     /**
-     * @var Dispatcher
+     * @var Entrypoint
      */
-    private $events;
+    private $entrypoint;
 
-    public function __construct(Guard $guard, SecurityKey $securityKey, Dispatcher $events)
+    /**
+     * @var AuthenticationSuccess
+     */
+    private $authenticationSuccess;
+    /**
+     * @var TwoFAAuthenticationRequest
+     */
+    private $authenticationRequest;
+
+    public function __construct(Guard $guard,
+                                TwoFAHandler $twoFAHandler,
+                                SecurityKey $securityKey,
+                                TwoFAAuthenticationRequest $authenticationRequest,
+                                Entrypoint $entrypoint,
+                                AuthenticationSuccess $authenticationSuccess)
     {
         $this->guard = $guard;
+        $this->twoFAHandler = $twoFAHandler;
         $this->securityKey = $securityKey;
-        $this->events = $events;
+        $this->entrypoint = $entrypoint;
+        $this->authenticationSuccess = $authenticationSuccess;
+        $this->authenticationRequest = $authenticationRequest;
     }
 
     public function handle(Request $request, \Closure $next)
     {
-        $this->events->listen(UserLogin::class, [$this, 'onUserLogin']);
+        $token = $this->guard->storage()->getToken();
 
-        $response = $next($request);
+        if ($this->shouldSkip($token)) {
+            if ($this->authenticationRequest->matchAtLeastOne($request)) {
+                return redirect('/')->with('message', 'Unauthorized');
+            }
+
+            return $next($request);
+        }
+
+        $twoFaToken = $this->twoFAHandler->createTwoFactorToken($token, $request, $this->securityKey);
+
+        if ($twoFaToken->isAuthenticated() && !$this->authenticationRequest->matchAtLeastOne($request)) {
+            return $next($request);
+        }
+
+        if (!$twoFaToken->isAuthenticated() && !$this->authenticationRequest->matchAtLeastOne($request)) {
+            return $this->entrypoint->startAuthentication($request);
+        }
+
+        if ($this->authenticationRequest->isFormRequest($request)) {
+            return $next($request);
+        }
+
+        return $this->processAuthentication($twoFaToken, $request);
+    }
+
+    protected function processAuthentication(TwoFactorToken $token, Request $request): Response
+    {
+        try {
+            $authenticatedToken = $this->guard->authenticate($token);
+
+            //dispatch 2fa login event
+
+            $this->guard->put($authenticatedToken);
+
+            return $this->authenticationSuccess->onAuthenticationSuccess($request, $authenticatedToken);
+        } catch (AuthenticationException $exception) {
+            // dispatch 2fa login failed event
+
+            return $this->entrypoint->startAuthentication($request, $exception);
+        }
+    }
+
+    private function shouldSkip(Tokenable $token = null): bool
+    {
+        return !$token
+            || !$this->twoFAHandler->supportsToken($token, $this->securityKey)
+            || !$this->twoFAHandler->isTokenStateValid($token);
     }
 }

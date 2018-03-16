@@ -9,4 +9,6 @@ interface UserTwoFactor
     public function isTwoFactorEnabled(): bool;
 
     public function getTwoFactorProvider(): ?string;
+
+    public function getTwoFactorUserSecret(): ?string;
 }

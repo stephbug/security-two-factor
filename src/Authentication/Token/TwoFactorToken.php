@@ -6,7 +6,7 @@ namespace StephBug\SecurityTwoFactor\Authentication\Token;
 
 use StephBug\SecurityModel\Guard\Authentication\Token\Tokenable;
 
-interface TwoFactorToken
+interface TwoFactorToken extends Tokenable
 {
     const TWO_FACTOR_ATTRIBUTE = 'two_factor_token_attribute';
 
