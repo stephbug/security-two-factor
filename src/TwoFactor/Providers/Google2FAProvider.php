@@ -54,7 +54,7 @@ class Google2FAProvider implements TwoFAProvider
     public function isCredentialsValid(Credentials $credentials): bool
     {
         if ($credentials instanceof TwoFactorCredentialsWithConfirmation) {
-            return $this->provider->verifyKey($credentials->credentials(), $credentials->getSecret());
+            return $this->provider->verifyKey($credentials->getSecret(), $credentials->credentials());
         }
 
         return false;

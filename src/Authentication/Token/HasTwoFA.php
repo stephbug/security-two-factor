@@ -26,11 +26,6 @@ trait HasTwoFA
         return null !== $this->getTwoFAValue();
     }
 
-    public function isSourceAuthenticated(): bool
-    {
-        return $this->getSource()->isAuthenticated();
-    }
-
     public function getTwoFAValue(): ?TwoFAValue
     {
         return $this->getSource()->getAttribute($this->getTwoFactorAttribute());

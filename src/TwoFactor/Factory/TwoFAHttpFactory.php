@@ -10,6 +10,7 @@ use StephBug\Firewall\Factory\Payload\PayloadService;
 use StephBug\SecurityModel\Guard\Guard;
 use StephBug\SecurityTwoFactor\Application\Http\Firewall\TwoFAAuthenticationFirewall;
 use StephBug\SecurityTwoFactor\Application\Http\Response\TwoFAAuthenticationSuccess;
+use StephBug\SecurityTwoFactor\Application\Http\Response\TwoFAResponse;
 use StephBug\SecurityTwoFactor\Authentication\Provider\TwoFAAuthenticationProvider;
 use StephBug\SecurityTwoFactor\TwoFactor\TwoFactorProviderFactory;
 use Symfony\Component\HttpFoundation\RequestMatcherInterface;
@@ -36,8 +37,7 @@ class TwoFAHttpFactory extends TwoFAAuthenticationFactory
                 $app->make($this->registerHandler($payload)),
                 $payload->securityKey,
                 $this->authenticationRequest(),
-                $app->make($entrypointId),
-                $app->make(TwoFAAuthenticationSuccess::class)
+                $this->getTwoFactorResponse($payload)
             );
         });
 
@@ -56,6 +56,14 @@ class TwoFAHttpFactory extends TwoFAAuthenticationFactory
         });
 
         return $id;
+    }
+
+    protected function getTwoFactorResponse(PayloadService $payload): TwoFAResponse
+    {
+        return new TwoFAResponse(
+            $this->app->make($this->registerEntrypoint($payload)),
+            $this->app->make(TwoFAAuthenticationSuccess::class)
+        );
     }
 
     public function position(): string

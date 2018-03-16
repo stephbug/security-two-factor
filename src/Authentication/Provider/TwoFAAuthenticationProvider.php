@@ -49,6 +49,8 @@ class TwoFAAuthenticationProvider implements AuthenticationProvider
             throw BadCredentials::invalid($credentials);
         }
 
+        $token->getTwoFAValue()->setAuthenticated(true);
+
         return $token->getSource();
     }
 

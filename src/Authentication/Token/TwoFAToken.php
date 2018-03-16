@@ -31,7 +31,8 @@ class TwoFAToken extends Token implements TwoFactorToken
 
     public function __construct(Tokenable $token, Credentials $credentials, SecurityKey $securityKey)
     {
-        parent::__construct($roles = $token->getUser()->getRoles());
+        // todo re set roles as args to add dynamic roles to token
+        parent::__construct($roles = $token->getUser()->getRoles()->toArray());
 
         $this->setUser($token->getUser());
         $this->token = $token;
@@ -43,13 +44,17 @@ class TwoFAToken extends Token implements TwoFactorToken
 
     public function isAuthenticated(): bool
     {
-        return parent::isAuthenticated() && $this->isSourceAuthenticated();
+        if (!$this->isInitialized()) {
+            return false;
+        }
+
+        return $this->getTwoFAValue()->isAuthenticated() && $this->getSource()->isAuthenticated();
     }
 
     public function setAuthenticated(bool $authenticated): void
     {
         throw InvalidArgument::reason(
-            'Can not set authenticated token after instantiation'
+            'Set an authenticated token after instantiation is forbidden'
         );
     }
 

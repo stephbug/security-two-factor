@@ -6,12 +6,11 @@ namespace StephBug\SecurityTwoFactor\Application\Http\Firewall;
 
 use Illuminate\Http\Request;
 use StephBug\SecurityModel\Application\Exception\AuthenticationException;
-use StephBug\SecurityModel\Application\Http\Entrypoint\Entrypoint;
-use StephBug\SecurityModel\Application\Http\Response\AuthenticationSuccess;
 use StephBug\SecurityModel\Application\Values\SecurityKey;
 use StephBug\SecurityModel\Guard\Authentication\Token\Tokenable;
 use StephBug\SecurityModel\Guard\Guard;
 use StephBug\SecurityTwoFactor\Application\Http\Request\TwoFAAuthenticationRequest;
+use StephBug\SecurityTwoFactor\Application\Http\Response\TwoFAResponse;
 use StephBug\SecurityTwoFactor\Authentication\Token\TwoFactorToken;
 use StephBug\SecurityTwoFactor\TwoFactor\TwoFAHandler;
 use Symfony\Component\HttpFoundation\Response;
@@ -34,32 +33,26 @@ class TwoFAAuthenticationFirewall
     private $securityKey;
 
     /**
-     * @var Entrypoint
-     */
-    private $entrypoint;
-
-    /**
-     * @var AuthenticationSuccess
-     */
-    private $authenticationSuccess;
-    /**
      * @var TwoFAAuthenticationRequest
      */
     private $authenticationRequest;
+
+    /**
+     * @var TwoFAResponse
+     */
+    private $response;
 
     public function __construct(Guard $guard,
                                 TwoFAHandler $twoFAHandler,
                                 SecurityKey $securityKey,
                                 TwoFAAuthenticationRequest $authenticationRequest,
-                                Entrypoint $entrypoint,
-                                AuthenticationSuccess $authenticationSuccess)
+                                TwoFAResponse $response)
     {
         $this->guard = $guard;
         $this->twoFAHandler = $twoFAHandler;
         $this->securityKey = $securityKey;
-        $this->entrypoint = $entrypoint;
-        $this->authenticationSuccess = $authenticationSuccess;
         $this->authenticationRequest = $authenticationRequest;
+        $this->response = $response;
     }
 
     public function handle(Request $request, \Closure $next)
@@ -68,7 +61,7 @@ class TwoFAAuthenticationFirewall
 
         if ($this->shouldSkip($token)) {
             if ($this->authenticationRequest->matchAtLeastOne($request)) {
-                return redirect('/')->with('message', 'Unauthorized');
+                return $this->response->toSafe($request);
             }
 
             return $next($request);
@@ -81,7 +74,7 @@ class TwoFAAuthenticationFirewall
         }
 
         if (!$twoFaToken->isAuthenticated() && !$this->authenticationRequest->matchAtLeastOne($request)) {
-            return $this->entrypoint->startAuthentication($request);
+            return $this->response->toLogin($request);
         }
 
         if ($this->authenticationRequest->isFormRequest($request)) {
@@ -100,11 +93,11 @@ class TwoFAAuthenticationFirewall
 
             $this->guard->put($authenticatedToken);
 
-            return $this->authenticationSuccess->onAuthenticationSuccess($request, $authenticatedToken);
+            return $this->response->onSuccess($request, $authenticatedToken);
         } catch (AuthenticationException $exception) {
             // dispatch 2fa login failed event
 
-            return $this->entrypoint->startAuthentication($request, $exception);
+            return $this->response->toLogin($request, $exception);
         }
     }
 

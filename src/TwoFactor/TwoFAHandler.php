@@ -99,7 +99,7 @@ class TwoFAHandler
             );
         }
 
-        if (!$this->isTokenStateValid($token)) {
+        if ($this->isTokenStateValid($token)) {
             throw InvalidArgument::reason('Token must not be already initialized.');
         }
 

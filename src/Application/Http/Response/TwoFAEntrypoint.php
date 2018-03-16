@@ -22,7 +22,7 @@ class TwoFAEntrypoint implements Entrypoint
      */
     private $routeName;
 
-    public function __construct(ResponseFactory $response, string $routeName = 'home')
+    public function __construct(ResponseFactory $response, string $routeName = 'front.auth.two_factor_login')
     {
         $this->response = $response;
         $this->routeName = $routeName;
@@ -30,6 +30,7 @@ class TwoFAEntrypoint implements Entrypoint
 
     public function startAuthentication(Request $request, AuthenticationException $exception = null): Response
     {
+        // todo route name must be the login two factor route
         return $this->response->redirectToRoute($this->routeName)
             ->with('message', $exception ? $exception->getMessage() : 'Two factor authentication failure');
     }
