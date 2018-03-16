@@ -69,7 +69,11 @@ class TwoFAAuthenticationFirewall
 
         $twoFaToken = $this->twoFAHandler->createTwoFactorToken($token, $request, $this->securityKey);
 
-        if ($twoFaToken->isAuthenticated() && !$this->authenticationRequest->matchAtLeastOne($request)) {
+        if ($twoFaToken->isAuthenticated()) {
+            if ($this->authenticationRequest->matchAtLeastOne($request)) {
+                return $this->response->toSafe($request);
+            }
+
             return $next($request);
         }
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace StephBug\SecurityTwoFactor\Authentication\Token;
 
-use StephBug\SecurityModel\Application\Exception\InvalidArgument;
 use StephBug\SecurityModel\Application\Values\Contract\Credentials;
 use StephBug\SecurityModel\Application\Values\SecurityKey;
 use StephBug\SecurityModel\Guard\Authentication\Token\Token;
@@ -38,8 +37,6 @@ class TwoFAToken extends Token implements TwoFactorToken
         $this->token = $token;
         $this->credentials = $credentials;
         $this->securityKey = $securityKey;
-
-        count($roles) > 0 and $this->setAuthenticated(true);
     }
 
     public function isAuthenticated(): bool
@@ -49,13 +46,6 @@ class TwoFAToken extends Token implements TwoFactorToken
         }
 
         return $this->getTwoFAValue()->isAuthenticated() && $this->getSource()->isAuthenticated();
-    }
-
-    public function setAuthenticated(bool $authenticated): void
-    {
-        throw InvalidArgument::reason(
-            'Set an authenticated token after instantiation is forbidden'
-        );
     }
 
     public function getCredentials(): Credentials
