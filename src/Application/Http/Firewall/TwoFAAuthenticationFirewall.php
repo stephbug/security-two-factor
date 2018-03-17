@@ -44,21 +44,34 @@ class TwoFAAuthenticationFirewall
      */
     private $response;
 
+    /**
+     * @var array
+     */
+    private $excludedRoutes;
+
     public function __construct(Guard $guard,
                                 TwoFAHandler $twoFAHandler,
                                 SecurityKey $securityKey,
                                 TwoFAAuthenticationRequest $authenticationRequest,
-                                TwoFAResponse $response)
+                                TwoFAResponse $response,
+                                array $excludedRoutes = [])
     {
         $this->guard = $guard;
         $this->twoFAHandler = $twoFAHandler;
         $this->securityKey = $securityKey;
         $this->authenticationRequest = $authenticationRequest;
         $this->response = $response;
+        $this->excludedRoutes = $excludedRoutes;
     }
 
     public function handle(Request $request, \Closure $next)
     {
+        if ($routeName = $request->route()->getName()) {
+            if (in_array($routeName, $this->excludedRoutes)) {
+                return $next($request);
+            }
+        }
+
         $token = $this->guard->storage()->getToken();
 
         if ($this->shouldSkip($token)) {

@@ -38,7 +38,8 @@ class TwoFAHttpFactory extends TwoFAAuthenticationFactory
                 $app->make($this->registerHandler($payload)),
                 $payload->securityKey,
                 $this->authenticationRequest($payload->securityKey),
-                $this->getTwoFactorResponse($payload)
+                $this->getTwoFactorResponse($payload),
+                $this->twoFactorContext->excludedRoutes($payload->securityKey->value())
             );
         });
 

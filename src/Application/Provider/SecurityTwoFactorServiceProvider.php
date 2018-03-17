@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace StephBug\SecurityTwoFactor\Application\Provider;
 
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
+use StephBug\SecurityTwoFactor\TwoFactor\TwoFactorContext;
 
 class SecurityTwoFactorServiceProvider extends ServiceProvider
 {
@@ -19,6 +21,12 @@ class SecurityTwoFactorServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfig();
+
+        $this->app->bind(TwoFactorContext::class, function (Application $app) {
+            return new TwoFactorContext(
+                $app->make('config')->get('security_two_factor.context', [])
+            );
+        });
     }
 
     protected function mergeConfig(): void
