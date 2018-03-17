@@ -6,11 +6,11 @@ namespace StephBug\SecurityTwoFactor\Application\Http\Response;
 
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\Request;
-use StephBug\SecurityModel\Application\Exception\AuthenticationException;
-use StephBug\SecurityModel\Application\Http\Entrypoint\Entrypoint;
+use StephBug\SecurityModel\Application\Exception\AuthorizationException;
+use StephBug\SecurityModel\Guard\Authentication\Token\Tokenable;
 use Symfony\Component\HttpFoundation\Response;
 
-class TwoFAEntrypoint implements Entrypoint
+class TwoFASafeResponse
 {
     /**
      * @var ResponseFactory
@@ -28,9 +28,9 @@ class TwoFAEntrypoint implements Entrypoint
         $this->routeName = $routeName;
     }
 
-    public function startAuthentication(Request $request, AuthenticationException $exception = null): Response
+    public function toSafe(Request $request, Tokenable $token, AuthorizationException $exception = null): Response
     {
         return $this->response->redirectToRoute($this->routeName)
-            ->with('message', $exception ? $exception->getMessage() : 'Two factor authentication failure');
+            ->with('message', $exception ? $exception->getMessage() : 'Authorization denied');
     }
 }

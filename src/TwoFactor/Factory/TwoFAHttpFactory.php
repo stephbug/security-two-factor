@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace StephBug\SecurityTwoFactor\TwoFactor\Factory;
 
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Routing\ResponseFactory;
 use StephBug\Firewall\Factory\Payload\PayloadFactory;
 use StephBug\Firewall\Factory\Payload\PayloadService;
 use StephBug\SecurityModel\Guard\Guard;
 use StephBug\SecurityTwoFactor\Application\Http\Firewall\TwoFAAuthenticationFirewall;
 use StephBug\SecurityTwoFactor\Application\Http\Response\TwoFAAuthenticationSuccess;
 use StephBug\SecurityTwoFactor\Application\Http\Response\TwoFAResponse;
+use StephBug\SecurityTwoFactor\Application\Http\Response\TwoFASafeResponse;
 use StephBug\SecurityTwoFactor\Authentication\Provider\TwoFAAuthenticationProvider;
 use StephBug\SecurityTwoFactor\TwoFactor\TwoFactorProviderFactory;
-use Symfony\Component\HttpFoundation\RequestMatcherInterface;
 
 class TwoFAHttpFactory extends TwoFAAuthenticationFactory
 {
@@ -36,7 +37,7 @@ class TwoFAHttpFactory extends TwoFAAuthenticationFactory
                 $app->make(Guard::class),
                 $app->make($this->registerHandler($payload)),
                 $payload->securityKey,
-                $this->authenticationRequest(),
+                $this->authenticationRequest($payload->securityKey),
                 $this->getTwoFactorResponse($payload)
             );
         });
@@ -62,18 +63,20 @@ class TwoFAHttpFactory extends TwoFAAuthenticationFactory
     {
         return new TwoFAResponse(
             $this->app->make($this->registerEntrypoint($payload)),
-            $this->app->make(TwoFAAuthenticationSuccess::class)
+            new TwoFAAuthenticationSuccess(
+                $this->app->make(ResponseFactory::class),
+                $this->twoFactorContext->success($payload->securityKey->value())
+            ),
+            new TwoFASafeResponse(
+                $this->app->make(ResponseFactory::class),
+                $this->twoFactorContext->safe($payload->securityKey->value())
+            )
         );
     }
 
     public function position(): string
     {
         return 'http';
-    }
-
-    public function matcher(): ?RequestMatcherInterface
-    {
-        return $this->httpMatcher();
     }
 
     public function serviceKey(): string

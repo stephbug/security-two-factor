@@ -12,6 +12,16 @@ use Symfony\Component\HttpFoundation\Request;
 
 class TwoFAFormRequest implements AuthenticationRequest
 {
+    /**
+     * @var string
+     */
+    private $routeName;
+
+    public function __construct(string $routeName)
+    {
+        $this->routeName = $routeName;
+    }
+
     public function extract(IlluminateRequest $request): Credentials
     {
         return new EmptyCredentials();
@@ -19,6 +29,6 @@ class TwoFAFormRequest implements AuthenticationRequest
 
     public function matches(Request $request): bool
     {
-        return 'front.auth.two_factor_login' === $request->route()->getName();
+        return $this->routeName === $request->route()->getName();
     }
 }

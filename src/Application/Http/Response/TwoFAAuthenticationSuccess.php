@@ -22,7 +22,7 @@ class TwoFAAuthenticationSuccess implements AuthenticationSuccess
      */
     private $routeName;
 
-    public function __construct(ResponseFactory $response, string $routeName = 'home')
+    public function __construct(ResponseFactory $response, string $routeName)
     {
         $this->response = $response;
         $this->routeName = $routeName;

@@ -12,6 +12,16 @@ use Symfony\Component\HttpFoundation\Request;
 
 class TwoFAHttpRequest implements AuthenticationRequest
 {
+    /**
+     * @var string
+     */
+    private $routeName;
+
+    public function __construct(string $routeName)
+    {
+        $this->routeName = $routeName;
+    }
+
     public function extract(IlluminateRequest $request)
     {
         if($this->matches($request)){
@@ -23,6 +33,6 @@ class TwoFAHttpRequest implements AuthenticationRequest
 
     public function matches(Request $request)
     {
-        return 'front.auth.two_factor_login.post' === $request->route()->getName();
+        return $this->routeName === $request->route()->getName();
     }
 }

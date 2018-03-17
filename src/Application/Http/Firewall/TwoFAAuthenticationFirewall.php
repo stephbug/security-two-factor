@@ -63,7 +63,7 @@ class TwoFAAuthenticationFirewall
 
         if ($this->shouldSkip($token)) {
             if ($this->authenticationRequest->matchAtLeastOne($request)) {
-                return $this->response->toSafe($request);
+                return $this->response->toSafe($request, $token);
             }
 
             return $next($request);
@@ -73,7 +73,7 @@ class TwoFAAuthenticationFirewall
 
         if ($twoFaToken->isAuthenticated()) {
             if ($this->authenticationRequest->matchAtLeastOne($request)) {
-                return $this->response->toSafe($request);
+                return $this->response->toSafe($request, $token);
             }
 
             return $next($request);

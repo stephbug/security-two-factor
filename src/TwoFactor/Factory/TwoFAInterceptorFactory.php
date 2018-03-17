@@ -10,7 +10,6 @@ use StephBug\Firewall\Factory\Payload\PayloadFactory;
 use StephBug\Firewall\Factory\Payload\PayloadService;
 use StephBug\SecurityModel\Guard\Guard;
 use StephBug\SecurityTwoFactor\Application\Http\Firewall\TwoFAInterceptor;
-use Symfony\Component\HttpFoundation\RequestMatcherInterface;
 
 class TwoFAInterceptorFactory extends TwoFAAuthenticationFactory
 {
@@ -34,11 +33,6 @@ class TwoFAInterceptorFactory extends TwoFAAuthenticationFactory
     public function position(): string
     {
         return 'pre_auth';
-    }
-
-    public function matcher(): ?RequestMatcherInterface
-    {
-        return $this->formMatcher();
     }
 
     public function serviceKey(): string
