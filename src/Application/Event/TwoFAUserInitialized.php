@@ -7,7 +7,7 @@ namespace StephBug\SecurityTwoFactor\Application\Event;
 use Illuminate\Http\Request;
 use StephBug\SecurityTwoFactor\Authentication\Token\TwoFactorToken;
 
-class TwoFactorUserInitialized
+class TwoFAUserInitialized
 {
     /**
      * @var TwoFactorToken

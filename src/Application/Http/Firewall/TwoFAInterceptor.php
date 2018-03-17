@@ -12,7 +12,7 @@ use StephBug\SecurityModel\Application\Http\Event\UserLogin;
 use StephBug\SecurityModel\Application\Values\SecurityKey;
 use StephBug\SecurityModel\Guard\Authentication\Token\Tokenable;
 use StephBug\SecurityModel\Guard\Guard;
-use StephBug\SecurityTwoFactor\Application\Event\TwoFactorUserInitialized;
+use StephBug\SecurityTwoFactor\Application\Event\TwoFAUserInitialized;
 use StephBug\SecurityTwoFactor\TwoFactor\TwoFAHandler;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -84,7 +84,7 @@ class TwoFAInterceptor
         $twoFAToken = $this->twoFAHandler->initializeToken($token, $request, $this->securityKey);
 
         $this->guard->event()->dispatchEvent(
-            new TwoFactorUserInitialized($token, $request)
+            new TwoFAUserInitialized($twoFAToken, $request)
         );
 
         $this->guard->put($twoFAToken->getSource());

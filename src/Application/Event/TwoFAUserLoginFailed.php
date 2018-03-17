@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use StephBug\SecurityModel\Application\Exception\AuthenticationException;
 use StephBug\SecurityModel\Guard\Authentication\Token\Tokenable;
 
-class TwoFactorUserLoginFailed
+class TwoFAUserLoginFailed
 {
     /**
      * @var Tokenable
