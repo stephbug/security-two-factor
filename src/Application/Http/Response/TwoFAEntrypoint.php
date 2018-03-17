@@ -31,6 +31,6 @@ class TwoFAEntrypoint implements Entrypoint
     public function startAuthentication(Request $request, AuthenticationException $exception = null): Response
     {
         return $this->response->redirectToRoute($this->routeName)
-            ->with('message', $exception ? $exception->getMessage() : 'Two factor authentication failure');
+            ->with('message', $exception ? $exception->getMessage() : 'Two factor authentication required');
     }
 }
