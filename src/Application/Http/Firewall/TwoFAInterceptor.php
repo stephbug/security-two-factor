@@ -12,6 +12,7 @@ use StephBug\SecurityModel\Application\Http\Event\UserLogin;
 use StephBug\SecurityModel\Application\Values\SecurityKey;
 use StephBug\SecurityModel\Guard\Authentication\Token\Tokenable;
 use StephBug\SecurityModel\Guard\Guard;
+use StephBug\SecurityTwoFactor\Application\Event\TwoFactorUserInitialized;
 use StephBug\SecurityTwoFactor\TwoFactor\TwoFAHandler;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -62,6 +63,10 @@ class TwoFAInterceptor
 
     public function handle(Request $request, \Closure $next)
     {
+        if ($this->guard->isStorageNotEmpty()) {
+            return $next($request);
+        }
+
         $this->events->listen(UserLogin::class, [$this, 'onUserLogin']);
 
         $response = $next($request);
@@ -78,7 +83,9 @@ class TwoFAInterceptor
     {
         $twoFAToken = $this->twoFAHandler->initializeToken($token, $request, $this->securityKey);
 
-        //event initialized
+        $this->guard->event()->dispatchEvent(
+            new TwoFactorUserInitialized($token, $request)
+        );
 
         $this->guard->put($twoFAToken->getSource());
 

@@ -9,6 +9,8 @@ use StephBug\SecurityModel\Application\Exception\AuthenticationException;
 use StephBug\SecurityModel\Application\Values\SecurityKey;
 use StephBug\SecurityModel\Guard\Authentication\Token\Tokenable;
 use StephBug\SecurityModel\Guard\Guard;
+use StephBug\SecurityTwoFactor\Application\Event\TwoFactorUserLoginFailed;
+use StephBug\SecurityTwoFactor\Application\Event\TwoFAUserLogin;
 use StephBug\SecurityTwoFactor\Application\Http\Request\TwoFAAuthenticationRequest;
 use StephBug\SecurityTwoFactor\Application\Http\Response\TwoFAResponse;
 use StephBug\SecurityTwoFactor\Authentication\Token\TwoFactorToken;
@@ -93,13 +95,19 @@ class TwoFAAuthenticationFirewall
         try {
             $authenticatedToken = $this->guard->authenticate($token);
 
-            //dispatch 2fa login event
+            $this->guard->event()->dispatchEvent(
+                new TwoFAUserLogin($authenticatedToken, $request)
+            );
 
             $this->guard->put($authenticatedToken);
 
             return $this->response->onSuccess($request, $authenticatedToken);
         } catch (AuthenticationException $exception) {
-            // dispatch 2fa login failed event
+            $this->guard->event()->dispatchEvent(
+                new TwoFactorUserLoginFailed(
+                    $token, $request, $exception
+                )
+            );
 
             return $this->response->toLogin($request, $exception);
         }
