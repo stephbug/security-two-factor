@@ -28,7 +28,7 @@ class TwoFASafeResponse
         $this->routeName = $routeName;
     }
 
-    public function toSafe(Request $request, Tokenable $token, AuthorizationException $exception = null): Response
+    public function toSafe(Request $request, Tokenable $token = null, AuthorizationException $exception = null): Response
     {
         return $this->response->redirectToRoute($this->routeName)
             ->with('message', $exception ? $exception->getMessage() : 'Authorization denied');
