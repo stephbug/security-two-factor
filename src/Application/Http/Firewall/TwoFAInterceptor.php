@@ -70,6 +70,7 @@ class TwoFAInterceptor
         $this->events->listen(UserLogin::class, [$this, 'onUserLogin']);
 
         $response = $next($request);
+
         $token = $this->guard->storage()->getToken();
 
         if (!$response instanceof Response || $response = $this->canNotHandleResponse($response, $token)) {

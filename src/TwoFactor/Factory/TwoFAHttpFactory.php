@@ -24,8 +24,7 @@ class TwoFAHttpFactory extends TwoFAAuthenticationFactory
 
         return (new PayloadFactory())
             ->setFirewall($this->registerFirewall($payload, $entrypointId))
-            ->setProvider($this->registerProvider($payload))
-            ->setEntrypoint($entrypointId);
+            ->setProvider($this->registerProvider($payload));
     }
 
     protected function registerFirewall(PayloadService $payload, string $entrypointId): string

@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace StephBug\SecurityTwoFactor\Application\Http\Firewall;
 
 use Illuminate\Http\Request;
+use StephBug\SecurityModel\Application\Exception\Assert\SecurityValueFailed;
 use StephBug\SecurityModel\Application\Exception\AuthenticationException;
 use StephBug\SecurityModel\Application\Values\SecurityKey;
 use StephBug\SecurityModel\Guard\Authentication\Token\Tokenable;
 use StephBug\SecurityModel\Guard\Guard;
-use StephBug\SecurityTwoFactor\Application\Event\TwoFAUserLoginFailed;
 use StephBug\SecurityTwoFactor\Application\Event\TwoFAUserLogin;
+use StephBug\SecurityTwoFactor\Application\Event\TwoFAUserLoginFailed;
 use StephBug\SecurityTwoFactor\Application\Http\Request\TwoFAAuthenticationRequest;
 use StephBug\SecurityTwoFactor\Application\Http\Response\TwoFAResponse;
 use StephBug\SecurityTwoFactor\Authentication\Token\TwoFactorToken;
@@ -82,7 +83,11 @@ class TwoFAAuthenticationFirewall
             return $next($request);
         }
 
-        $twoFaToken = $this->twoFAHandler->createTwoFactorToken($token, $request, $this->securityKey);
+        try {
+            $twoFaToken = $this->twoFAHandler->createTwoFactorToken($token, $request, $this->securityKey);
+        } catch (SecurityValueFailed $exception) {
+            return $this->response->toLogin($request, $exception);
+        }
 
         if ($twoFaToken->isAuthenticated()) {
             if ($this->authenticationRequest->matchAtLeastOne($request)) {
