@@ -30,8 +30,7 @@ class TwoFAToken extends Token implements TwoFactorToken
 
     public function __construct(Tokenable $token, Credentials $credentials, SecurityKey $securityKey)
     {
-        // todo re set roles as args to add dynamic roles to token
-        parent::__construct($roles = $token->getUser()->getRoles()->toArray());
+        parent::__construct($roles = $token->getRoles());
 
         $this->setUser($token->getUser());
         $this->token = $token;

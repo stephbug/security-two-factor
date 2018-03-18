@@ -32,10 +32,12 @@ class TwoFAEntrypoint implements Entrypoint
     {
         $response = $this->response->redirectToRoute($this->routeName);
 
+        $message = null;
+
         if ($exception && $exception->getMessage()) {
-            $response->with('message', $exception->getMessage());
+           $message = $exception->getMessage();
         }
 
-        return $response;
+        return $response->with('message', $message ?? 'Two factor authentication required');
     }
 }

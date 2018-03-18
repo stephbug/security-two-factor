@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace StephBug\SecurityTwoFactor\Application\Http\Firewall;
 
 use Illuminate\Http\Request;
-use StephBug\SecurityModel\Application\Exception\Assert\SecurityValueFailed;
 use StephBug\SecurityModel\Application\Exception\AuthenticationException;
 use StephBug\SecurityModel\Application\Values\SecurityKey;
 use StephBug\SecurityModel\Guard\Authentication\Token\Tokenable;
@@ -67,37 +66,31 @@ class TwoFAAuthenticationFirewall
 
     public function handle(Request $request, \Closure $next)
     {
-        if ($routeName = $request->route()->getName()) {
-            if (in_array($routeName, $this->excludedRoutes)) {
-                return $next($request);
-            }
+        if ($this->isExcludedRoute($request)) {
+            return $next($request);
         }
 
         $token = $this->guard->storage()->getToken();
 
-        if ($this->shouldSkip($token)) {
-            if ($this->authenticationRequest->matchAtLeastOne($request)) {
+        if ($this->isNotSupportedToken($token)) {
+            if ($this->matchTwoFactorRoutes($request)) {
                 return $this->response->toSafe($request, $token);
             }
 
             return $next($request);
         }
 
-        try {
-            $twoFaToken = $this->twoFAHandler->createTwoFactorToken($token, $request, $this->securityKey);
-        } catch (SecurityValueFailed $exception) {
-            return $this->response->toLogin($request, $exception);
-        }
+        $twoFaToken = $this->twoFAHandler->createTwoFactorToken($token, $request, $this->securityKey);
 
         if ($twoFaToken->isAuthenticated()) {
-            if ($this->authenticationRequest->matchAtLeastOne($request)) {
+            if ($this->matchTwoFactorRoutes($request)) {
                 return $this->response->toSafe($request, $token);
             }
 
             return $next($request);
         }
 
-        if (!$twoFaToken->isAuthenticated() && !$this->authenticationRequest->matchAtLeastOne($request)) {
+        if (!$twoFaToken->isAuthenticated() && !$this->matchTwoFactorRoutes($request)) {
             return $this->response->toLogin($request);
         }
 
@@ -131,10 +124,24 @@ class TwoFAAuthenticationFirewall
         }
     }
 
-    private function shouldSkip(Tokenable $token = null): bool
+    private function isNotSupportedToken(Tokenable $token = null): bool
     {
         return !$token
             || !$this->twoFAHandler->supportsToken($token, $this->securityKey)
             || !$this->twoFAHandler->isTokenStateValid($token);
+    }
+
+    private function matchTwoFactorRoutes(Request $request): bool
+    {
+        return $this->authenticationRequest->matchAtLeastOne($request);
+    }
+
+    private function isExcludedRoute(Request $request): bool
+    {
+        if ($routeName = $request->route()->getName()) {
+            return in_array($routeName, $this->excludedRoutes);
+        }
+
+        return false;
     }
 }
