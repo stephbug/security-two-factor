@@ -10,6 +10,7 @@ use StephBug\SecurityModel\Application\Values\SecurityKey;
 use StephBug\SecurityModel\Guard\Authentication\Token\Tokenable;
 use StephBug\SecurityModel\Guard\Guard;
 use StephBug\SecurityTwoFactor\Application\Event\TwoFAUserLogin;
+use StephBug\SecurityTwoFactor\Application\Event\TwoFAUserLoginAttempt;
 use StephBug\SecurityTwoFactor\Application\Event\TwoFAUserLoginFailed;
 use StephBug\SecurityTwoFactor\Application\Http\Request\TwoFAAuthenticationRequest;
 use StephBug\SecurityTwoFactor\Application\Http\Response\TwoFAResponse;
@@ -104,6 +105,10 @@ class TwoFAAuthenticationFirewall
     protected function processAuthentication(TwoFactorToken $token, Request $request): Response
     {
         try {
+            $this->guard->event()->dispatchEvent(
+                new TwoFAUserLoginAttempt($token, $request)
+            );
+
             $authenticatedToken = $this->guard->authenticate($token);
 
             $this->guard->event()->dispatchEvent(

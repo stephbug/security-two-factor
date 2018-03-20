@@ -6,7 +6,6 @@ namespace StephBug\SecurityTwoFactor\TwoFactor;
 
 use Illuminate\Http\Request;
 use StephBug\SecurityModel\Application\Exception\InvalidArgument;
-use StephBug\SecurityModel\Application\Values\Contract\Credentials;
 use StephBug\SecurityModel\Application\Values\EmptyCredentials;
 use StephBug\SecurityModel\Application\Values\SecurityKey;
 use StephBug\SecurityModel\Guard\Authentication\Token\Tokenable;
