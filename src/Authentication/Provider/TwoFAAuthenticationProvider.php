@@ -6,7 +6,7 @@ namespace StephBug\SecurityTwoFactor\Authentication\Provider;
 
 use StephBug\SecurityModel\Application\Exception\UnsupportedProvider;
 use StephBug\SecurityModel\Application\Exception\UnsupportedUser;
-use StephBug\SecurityModel\Application\Values\SecurityKey;
+use StephBug\SecurityModel\Application\Values\Security\SecurityKey;
 use StephBug\SecurityModel\Guard\Authentication\Providers\AuthenticationProvider;
 use StephBug\SecurityModel\Guard\Authentication\Token\Tokenable;
 use StephBug\SecurityModel\User\Exception\BadCredentials;

@@ -8,10 +8,11 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use StephBug\Firewall\Factory\Contracts\AuthenticationServiceFactory;
 use StephBug\Firewall\Factory\Payload\PayloadService;
-use StephBug\SecurityModel\Application\Values\SecurityKey;
+use StephBug\SecurityModel\Application\Values\Security\SecurityKey;
 use StephBug\SecurityTwoFactor\Application\Http\Request\TwoFAAuthenticationRequest;
 use StephBug\SecurityTwoFactor\Application\Http\Request\TwoFAFormRequest;
 use StephBug\SecurityTwoFactor\Application\Http\Request\TwoFAHttpRequest;
+use StephBug\SecurityTwoFactor\Application\Http\Request\TwoFAMatcher;
 use StephBug\SecurityTwoFactor\Application\Http\Response\TwoFAEntrypoint;
 use StephBug\SecurityTwoFactor\TwoFactor\TwoFactorContext;
 use StephBug\SecurityTwoFactor\TwoFactor\TwoFAHandler;
@@ -63,7 +64,7 @@ abstract class TwoFAAuthenticationFactory implements AuthenticationServiceFactor
         return $entrypointId;
     }
 
-    protected function authenticationRequest(SecurityKey $securityKey): TwoFAAuthenticationRequest
+    protected function authenticationRequest(SecurityKey $securityKey): TwoFAMatcher
     {
         return new TwoFAAuthenticationRequest(
             $this->formMatcher($securityKey),

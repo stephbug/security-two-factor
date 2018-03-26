@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace StephBug\SecurityTwoFactor\Application\Http\Request;
 
 use Illuminate\Http\Request as IlluminateRequest;
-use StephBug\SecurityModel\Application\Http\Request\AuthenticationRequest;
 use StephBug\SecurityModel\Application\Values\Contract\Credentials;
-use StephBug\SecurityModel\Application\Values\EmptyCredentials;
+use StephBug\SecurityModel\Application\Values\User\EmptyCredentials;
 use Symfony\Component\HttpFoundation\Request;
 
-class TwoFAAuthenticationRequest implements AuthenticationRequest
+class TwoFAAuthenticationRequest implements TwoFAMatcher
 {
     /**
      * @var TwoFAFormRequest
@@ -43,20 +42,12 @@ class TwoFAAuthenticationRequest implements AuthenticationRequest
 
     public function matches(Request $request)
     {
-        if ($this->isFormRequest($request)) {
-            return $this->formRequest->matches($request);
-        }
-
-        return $this->httpRequest->matches($request);
+        return $this->matchAtLeastOne($request);
     }
 
     public function matchAtLeastOne(IlluminateRequest $request): bool
     {
-        if ($this->isFormRequest($request) || $this->isHttpRequest($request)) {
-            return true;
-        }
-
-        return false;
+        return $this->isFormRequest($request) || $this->isHttpRequest($request);
     }
 
     public function isFormRequest(IlluminateRequest $request): bool
@@ -67,15 +58,5 @@ class TwoFAAuthenticationRequest implements AuthenticationRequest
     public function isHttpRequest(IlluminateRequest $request): bool
     {
         return $this->httpRequest->matches($request);
-    }
-
-    public function form(): TwoFAFormRequest
-    {
-        return $this->formRequest;
-    }
-
-    public function http(): TwoFAHttpRequest
-    {
-        return $this->httpRequest;
     }
 }

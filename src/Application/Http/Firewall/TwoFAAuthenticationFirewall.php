@@ -6,13 +6,13 @@ namespace StephBug\SecurityTwoFactor\Application\Http\Firewall;
 
 use Illuminate\Http\Request;
 use StephBug\SecurityModel\Application\Exception\AuthenticationException;
-use StephBug\SecurityModel\Application\Values\SecurityKey;
+use StephBug\SecurityModel\Application\Values\Security\SecurityKey;
 use StephBug\SecurityModel\Guard\Authentication\Token\Tokenable;
 use StephBug\SecurityModel\Guard\Guard;
 use StephBug\SecurityTwoFactor\Application\Event\TwoFAUserLogin;
 use StephBug\SecurityTwoFactor\Application\Event\TwoFAUserLoginAttempt;
 use StephBug\SecurityTwoFactor\Application\Event\TwoFAUserLoginFailed;
-use StephBug\SecurityTwoFactor\Application\Http\Request\TwoFAAuthenticationRequest;
+use StephBug\SecurityTwoFactor\Application\Http\Request\TwoFAMatcher;
 use StephBug\SecurityTwoFactor\Application\Http\Response\TwoFAResponse;
 use StephBug\SecurityTwoFactor\Authentication\Token\TwoFactorToken;
 use StephBug\SecurityTwoFactor\TwoFactor\TwoFAHandler;
@@ -36,9 +36,9 @@ class TwoFAAuthenticationFirewall
     private $securityKey;
 
     /**
-     * @var TwoFAAuthenticationRequest
+     * @var TwoFAMatcher
      */
-    private $authenticationRequest;
+    private $matcher;
 
     /**
      * @var TwoFAResponse
@@ -53,14 +53,14 @@ class TwoFAAuthenticationFirewall
     public function __construct(Guard $guard,
                                 TwoFAHandler $twoFAHandler,
                                 SecurityKey $securityKey,
-                                TwoFAAuthenticationRequest $authenticationRequest,
+                                TwoFAMatcher $matcher,
                                 TwoFAResponse $response,
                                 array $excludedRoutes = [])
     {
         $this->guard = $guard;
         $this->twoFAHandler = $twoFAHandler;
         $this->securityKey = $securityKey;
-        $this->authenticationRequest = $authenticationRequest;
+        $this->matcher = $matcher;
         $this->response = $response;
         $this->excludedRoutes = $excludedRoutes;
     }
@@ -95,7 +95,7 @@ class TwoFAAuthenticationFirewall
             return $this->response->toLogin($request);
         }
 
-        if ($this->authenticationRequest->isFormRequest($request)) {
+        if ($this->matcher->isFormRequest($request)) {
             return $next($request);
         }
 
@@ -138,7 +138,7 @@ class TwoFAAuthenticationFirewall
 
     private function matchTwoFactorRoutes(Request $request): bool
     {
-        return $this->authenticationRequest->matchAtLeastOne($request);
+        return $this->matcher->matchAtLeastOne($request);
     }
 
     private function isExcludedRoute(Request $request): bool

@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use StephBug\SecurityModel\Application\Exception\InvalidArgument;
 use StephBug\SecurityModel\Application\Http\Entrypoint\Entrypoint;
 use StephBug\SecurityModel\Application\Http\Event\UserLogin;
-use StephBug\SecurityModel\Application\Values\SecurityKey;
+use StephBug\SecurityModel\Application\Values\Security\SecurityKey;
 use StephBug\SecurityModel\Guard\Authentication\Token\Tokenable;
 use StephBug\SecurityModel\Guard\Guard;
 use StephBug\SecurityTwoFactor\Application\Event\TwoFAUserInitialized;
@@ -117,14 +117,5 @@ class TwoFAInterceptor
     public function onUserLogin(UserLogin $event): void
     {
         $this->event = $event;
-    }
-
-    protected function requireAuthentication(Request $request): bool
-    {
-        if ($token = $this->guard->storage()->getToken()) {
-            return $this->twoFAHandler->supportsToken($token, $this->securityKey);
-        }
-
-        return true;
     }
 }

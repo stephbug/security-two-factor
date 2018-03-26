@@ -74,11 +74,6 @@ class TwoFAHttpFactory extends TwoFAAuthenticationFactory
         );
     }
 
-    public function position(): string
-    {
-        return 'http';
-    }
-
     public function serviceKey(): string
     {
         return 'two-factor-http';

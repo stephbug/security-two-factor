@@ -7,7 +7,7 @@ namespace StephBug\SecurityTwoFactor\Application\Http\Request;
 use Illuminate\Http\Request as IlluminateRequest;
 use StephBug\SecurityModel\Application\Http\Request\AuthenticationRequest;
 use StephBug\SecurityModel\Application\Values\Contract\Credentials;
-use StephBug\SecurityModel\Application\Values\EmptyCredentials;
+use StephBug\SecurityModel\Application\Values\User\EmptyCredentials;
 use Symfony\Component\HttpFoundation\Request;
 
 class TwoFAFormRequest implements AuthenticationRequest

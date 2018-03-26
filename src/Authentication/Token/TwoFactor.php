@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace StephBug\SecurityTwoFactor\Authentication\Token;
 
-class TwoFAValue implements \JsonSerializable
+class TwoFactor implements \JsonSerializable
 {
     /**
      * @var string

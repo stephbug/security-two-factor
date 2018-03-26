@@ -14,7 +14,7 @@ interface TwoFactorToken extends Tokenable
 
     public function isInitialized(): bool;
 
-    public function getTwoFAValue(): ?TwoFAValue;
+    public function getTwoFAValue(): ?TwoFactor;
 
     public function getTwoFactorAttribute(): string;
 

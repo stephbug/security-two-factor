@@ -17,7 +17,7 @@ trait HasTwoFA
 
         $this->getSource()->setAttribute(
             $this->getTwoFactorAttribute(),
-            new TwoFAValue()
+            new TwoFactor()
         );
     }
 
@@ -26,7 +26,7 @@ trait HasTwoFA
         return null !== $this->getTwoFAValue();
     }
 
-    public function getTwoFAValue(): ?TwoFAValue
+    public function getTwoFAValue(): ?TwoFactor
     {
         return $this->getSource()->getAttribute($this->getTwoFactorAttribute());
     }

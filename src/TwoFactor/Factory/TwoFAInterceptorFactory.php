@@ -30,11 +30,6 @@ class TwoFAInterceptorFactory extends TwoFAAuthenticationFactory
         return (new PayloadFactory())->setFirewall($serviceId);
     }
 
-    public function position(): string
-    {
-        return 'pre_auth';
-    }
-
     public function serviceKey(): string
     {
         return 'two-factor-interceptor';

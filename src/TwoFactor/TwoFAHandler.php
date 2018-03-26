@@ -6,10 +6,10 @@ namespace StephBug\SecurityTwoFactor\TwoFactor;
 
 use Illuminate\Http\Request;
 use StephBug\SecurityModel\Application\Exception\InvalidArgument;
-use StephBug\SecurityModel\Application\Values\EmptyCredentials;
-use StephBug\SecurityModel\Application\Values\SecurityKey;
+use StephBug\SecurityModel\Application\Values\Security\SecurityKey;
+use StephBug\SecurityModel\Application\Values\User\EmptyCredentials;
 use StephBug\SecurityModel\Guard\Authentication\Token\Tokenable;
-use StephBug\SecurityTwoFactor\Application\Http\Request\TwoFAAuthenticationRequest;
+use StephBug\SecurityTwoFactor\Application\Http\Request\TwoFAMatcher;
 use StephBug\SecurityTwoFactor\Authentication\Token\TwoFactorToken;
 use StephBug\SecurityTwoFactor\Authentication\Token\TwoFAToken;
 use StephBug\SecurityTwoFactor\User\UserTwoFactor;
@@ -17,18 +17,18 @@ use StephBug\SecurityTwoFactor\User\UserTwoFactor;
 class TwoFAHandler
 {
     /**
-     * @var TwoFAAuthenticationRequest
+     * @var TwoFAMatcher
      */
-    private $authenticationRequest;
+    private $matcher;
 
     /**
      * @var array
      */
     private $supportedToken;
 
-    public function __construct(TwoFAAuthenticationRequest $authenticationRequest, array $supportedToken)
+    public function __construct(TwoFAMatcher $matcher, array $supportedToken)
     {
-        $this->authenticationRequest = $authenticationRequest;
+        $this->matcher = $matcher;
         $this->supportedToken = $supportedToken;
     }
 
@@ -38,7 +38,7 @@ class TwoFAHandler
             $token = $token->getSource();
         }
 
-        $credentials = $this->authenticationRequest->extract($request);
+        $credentials = $this->matcher->extract($request);
 
         return new TwoFAToken($token, $credentials, $securityKey);
     }
@@ -102,6 +102,5 @@ class TwoFAHandler
         if ($this->isTokenStateValid($token)) {
             throw InvalidArgument::reason('Token must not be already initialized.');
         }
-
     }
 }
